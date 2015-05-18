@@ -9,7 +9,7 @@
 // factor out common settings into a sequence
 lazy val commonSettings = Seq(
     organization := "org.hirosezouen",
-    version      := "1.1.0",
+    version      := "1.0.0",
     scalaVersion := "2.11.6"
 )
 
@@ -24,7 +24,8 @@ lazy val root = (project in file(".")).
 
         // add Akka dependency
         resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/",
-        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
+//        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
+        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.3.11",
 
         // add ScalaTest dependency
         libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.2.4" % "test",
