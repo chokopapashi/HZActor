@@ -9,7 +9,7 @@
 // factor out common settings into a sequence
 lazy val commonSettings = Seq(
     organization := "org.hirosezouen",
-    version      := "1.0.0",
+    version      := "1.1.0",
     scalaVersion := "2.11.6"
 )
 
@@ -19,11 +19,12 @@ lazy val root = (project in file(".")).
         // set the name of the project
         name := "HZActor",
 
-        // Actor of Ver2.10.1-> requires to add libraryDependencies explicitly
-        libraryDependencies <+= scalaVersion { "org.scala-lang" % "scala-actors" % _ },
-
         // Reflect of Ver2.10.1-> requires to add libraryDependencies explicitly
-        libraryDependencies <+= scalaVersion { "org.scala-lang" % "scala-reflect" % _ },
+//        libraryDependencies <+= scalaVersion { "org.scala-lang" % "scala-reflect" % _ },
+
+        // add Akka dependency
+        resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/",
+        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
 
         // add ScalaTest dependency
         libraryDependencies += "org.scalatest" % "scalatest_2.10" % "2.2.4" % "test",

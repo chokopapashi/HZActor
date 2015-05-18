@@ -14,9 +14,20 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.Reader
 
-import scala.actors._
-import scala.actors.Actor._
+//import scala.actors._
+//import scala.actors.Actor._
 import scala.util.control.Exception._
+
+// for migration from Scala Actor to Akka Actor
+import scala.concurrent.duration._
+//import scala.actors.migration.pattern.ask
+//import scala.actors.migration._
+import scala.concurrent._
+
+import akka.actor._
+import akka.actor.ActorDSL._
+import akka.pattern.ask
+import akka.util.Timeout
 
 import ch.qos.logback.classic.Level
 
@@ -45,37 +56,51 @@ object HZActor {
 
     def defaultInputFilter(s: String) = s 
 
-    def startInputActor(in: InputStream, filter: (String) => String = defaultInputFilter)
-                       (input: PartialFunction[String,Unit]): Actor
+    def startInputActor(in: InputStream, parent: ActorRef, filter: (String) => String = defaultInputFilter)
+                       (input: PartialFunction[String,Unit])(implicit system: ActorRefFactory): ActorRef
     = {
-
-        val parent = self
         val reader = new BufferedReader(new InputStreamReader(in))
 
-        actor {
-            log_debug("InputActor:%s".format(self))
-            link(parent)
-            loop {
-                catching(classOf[Exception]) either {
-                    reader.readLine
-                } match {
-                    case Right(line) => {
-                        log_debug("InputActor:Rignt(%s)".format(line))
-                        (({
-                            case null => {
-                                exit(HZNormalStoped())
-                            }
-                        }: PartialFunction[String,Unit]) orElse input orElse({
-                            case x => log_error("InputActor:unknown message:%s".format(x))
-                        }: PartialFunction[String,Unit]))(filter(line))
+//        implicit val system = ActorSystem("migration-system")
+
+        ActorDSL.actor(new ActWithStash {
+            override def preStart() {
+                log_debug("InputActor:%s".format(self))
+//                link(parent)
+//                trapExit = false
+
+                self ! InputLoop()
+            }
+
+            case class InputLoop()
+
+            override def receive = {
+                case InputLoop => {
+                    catching(classOf[Exception]) either {
+                        reader.readLine
+                    } match {
+                        case Right(line) => {
+                            log_debug("InputActor:Rignt(%s)".format(line))
+                            (({
+                                case null => {
+                                    parent ! HZNormalStoped()
+                                    context.stop(self)
+                                }
+                            }: PartialFunction[String,Unit]) orElse input orElse({
+                                case x => log_error("InputActor:unknown message:%s".format(x))
+                            }: PartialFunction[String,Unit]))(filter(line))
+                        }
+                        case Left(th) => {
+                            log_error("InputActor:Left(%s)".format(th.toString))
+                            parent ! HZErrorStoped(th)
+                            context.stop(self)
+                        }
                     }
-                    case Left(th) => {
-                        log_error("InputActor:Left(%s)".format(th.toString))
-                        exit(HZErrorStoped(th))
-                    }
+
+                    self ! InputLoop()
                 }
             }
-        }
+        })
     }
 }
 
