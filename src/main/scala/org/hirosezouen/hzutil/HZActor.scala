@@ -2,7 +2,6 @@
  * Copyright (c) 2013, Hidekatsu Hirose
  * Copyright (c) 2013, Hirose-Zouen
  * This file is subject to the terms and conditions defined in
- * This file is subject to the terms and conditions defined in
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
@@ -14,25 +13,13 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.Reader
 
-//import scala.actors._
-//import scala.actors.Actor._
 import scala.util.control.Exception._
-
-// for migration from Scala Actor to Akka Actor
 import scala.concurrent.duration._
-//import scala.actors.migration.pattern.ask
-//import scala.actors.migration._
-import scala.concurrent._
 
-import akka.actor._
-import akka.actor.ActorDSL._
-import akka.pattern.ask
-import akka.util.Timeout
+import akka.actor.{Actor, ActorRef, ActorRefFactory, ActorSystem, Props, Terminated}
 
-import ch.qos.logback.classic.Level
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.hirosezouen.hzutil._
+import HZIO._
 
 object HZActor {
     import HZLog._
@@ -56,51 +43,50 @@ object HZActor {
 
     def defaultInputFilter(s: String) = s 
 
-    def startInputActor(in: InputStream, parent: ActorRef, filter: (String) => String = defaultInputFilter)
-                       (input: PartialFunction[String,Unit])(implicit system: ActorRefFactory): ActorRef
-    = {
-        val reader = new BufferedReader(new InputStreamReader(in))
+    class InputActor(in: InputStream, filter: (String) => String,
+                     input: PartialFunction[String,Unit]) extends Actor
+    {
+        private val reader = new BufferedReader(new InputStreamReader(in))
+        private case class InputLoop()
 
-//        implicit val system = ActorSystem("migration-system")
+        override def preStart() {
+            log_trace(s"InputActor:$self")
+            self ! InputLoop()
+        }
 
-        ActorDSL.actor(new ActWithStash {
-            override def preStart() {
-                log_debug("InputActor:%s".format(self))
-//                link(parent)
-//                trapExit = false
+        def receive = {
+            case InputLoop() => {
+                catching(classOf[Exception]) either {
+                    reader.readLine
+                } match {
+                    case Right(line) => {
+                        log_trace(s"InputActor:Rignt($line)")
+                        (({
+                            case null => {
+                                log_trace("InputActor:Right(null)")
+//                                parent ! HZNormalStoped()
+                                context.stop(self)
+                            }
+                        }: PartialFunction[String,Unit]) orElse input orElse({
+                            case x => log_error(s"InputActor:unknown message:$x")
+                        }: PartialFunction[String,Unit]))(filter(line))
 
-                self ! InputLoop()
-            }
-
-            case class InputLoop()
-
-            override def receive = {
-                case InputLoop => {
-                    catching(classOf[Exception]) either {
-                        reader.readLine
-                    } match {
-                        case Right(line) => {
-                            log_debug("InputActor:Rignt(%s)".format(line))
-                            (({
-                                case null => {
-                                    parent ! HZNormalStoped()
-                                    context.stop(self)
-                                }
-                            }: PartialFunction[String,Unit]) orElse input orElse({
-                                case x => log_error("InputActor:unknown message:%s".format(x))
-                            }: PartialFunction[String,Unit]))(filter(line))
-                        }
-                        case Left(th) => {
-                            log_error("InputActor:Left(%s)".format(th.toString))
-                            parent ! HZErrorStoped(th)
-                            context.stop(self)
-                        }
+                        self ! InputLoop()
                     }
-
-                    self ! InputLoop()
+                    case Left(th) => {
+                        log_error(s"InputActor:Left($th.toString)")
+//                        parent ! HZErrorStoped(th)
+                        context.stop(self)
+                    }
                 }
             }
-        })
+        }
+    }
+    object InputActor {
+        def start(in: InputStream, filter: (String) => String = defaultInputFilter)
+                 (input: PartialFunction[String,Unit])
+                 (implicit system: ActorRefFactory): ActorRef
+            = system.actorOf(Props(new InputActor(in,filter,input)), "InputActor")
     }
 }
 
