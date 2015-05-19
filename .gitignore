@@ -6,12 +6,8 @@
 .DS_Store
 .svn/
 *.lnk
+*.bat
 logback.xml
-
-HZEchoClient/
-HZEchoServer/
-HZMultiClient/
-HZEchoBindClient/
 
 #original -->
 
