@@ -5,7 +5,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-package org.hirosezouen.hzutil
+package org.hirosezouen.hzactor
 
 import java.io.BufferedReader
 import java.io.IOException
