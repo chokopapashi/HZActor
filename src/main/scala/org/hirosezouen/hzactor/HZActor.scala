@@ -14,9 +14,19 @@ import java.io.InputStreamReader
 import java.io.Reader
 
 import scala.util.control.Exception._
+import scala.collection.generic.GenericSetTemplate
+import scala.collection.generic.SetFactory
+import scala.collection.generic.ImmutableSetFactory
+import scala.collection.SetLike
 import scala.concurrent.duration._
 
-import akka.actor.{Actor, ActorRef, ActorRefFactory, ActorSystem, Props, Terminated}
+import akka.actor.Actor
+import akka.actor.ActorContext
+import akka.actor.ActorRef
+import akka.actor.ActorRefFactory
+import akka.actor.ActorContext
+import akka.actor.Props
+import akka.actor.Terminated
 
 import org.hirosezouen.hzutil._
 import HZIO._
@@ -40,6 +50,46 @@ object HZActor {
     case class HZCommandStopedWithReason(reason: AnyRef) extends HZActorStoped
     case class HZUnHandledException(reason: Any) extends HZActorReason
     case class HZUnknownReason(reason: Any) extends HZActorReason
+    object HZNullReason extends HZActorReason
+
+    trait HZActorStateBase {
+        val actor: ActorRef
+        val stopReason: HZActorReason
+    }
+    case class HZActorState(actor: ActorRef, stopReason: HZActorReason = HZNullReason) extends HZActorStateBase
+
+    class HZActorStateSet[A <: HZActorStateBase] extends Set[A]
+                                                 with SetLike[A, HZActorStateSet[A]]
+                                                 with Serializable
+     {
+        def +(elem: A): HZActorStateSet[A] = {
+            super
+            this
+        }
+        def -(elem: A): HZActorStateSet[A] = this
+        def contains(elem: A): Boolean = true
+        def iterator: Iterator[A] = null
+        override def empty = new HZActorStateSet
+    }
+    object HZActorStateSet {
+        def empty = new HZActorStateSet
+    }
+
+    def exitNormaly(reason: HZActorReason, parent: ActorRef)(implicit myself: ActorRef, context: ActorContext) {
+        parent ! reason
+        context.stop(myself)
+    }
+    def exitNormaly(parent: ActorRef)(implicit myself: ActorRef, context: ActorContext) {
+        exitNormaly(HZNormalStoped(), parent)(myself, context)
+    }
+
+    def exitWithError(reason: HZActorReason, th: Throwable, parent: ActorRef):Nothing = {
+        parent ! reason
+        throw th
+    }
+    def exitWithError(th: Throwable, parent: ActorRef):Nothing = {
+        exitWithError(HZErrorStoped(th), th, parent)
+    }
 
     def defaultInputFilter(s: String) = s 
 
@@ -85,8 +135,8 @@ object HZActor {
     object InputActor {
         def start(in: InputStream, filter: (String) => String = defaultInputFilter)
                  (input: PartialFunction[String,Unit])
-                 (implicit system: ActorRefFactory): ActorRef
-            = system.actorOf(Props(new InputActor(in,filter,input)), "InputActor")
+                 (implicit context: ActorContext): ActorRef
+            = context.actorOf(Props(new InputActor(in,filter,input)), "InputActor")
     }
 }
 
