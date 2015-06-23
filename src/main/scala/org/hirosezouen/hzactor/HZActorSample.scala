@@ -37,8 +37,8 @@ object HZActorSample {
         val quit_r = "(?i)^q$".r
         override def preStart() {
             inputActor = InputActor.start(System.in) {
-                case (quit_r(),_,_) => System.in.close
-                case (s,_,_)        => log_info(s"input : $s")
+                case quit_r() => System.in.close
+                case s        => log_info(s"input : $s")
             }
             context.watch(inputActor)
         }
