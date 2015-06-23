@@ -51,6 +51,8 @@ lazy val root = (project in file(".")).
         parallelExecution in Test := false,
 //        logLevel := Level.Debug,
         scalacOptions += "-deprecation",
-        scalacOptions += "-feature"
+        scalacOptions += "-feature",
+        scalacOptions += "-Xlint",
+        scalacOptions += "-Xfatal-warnings"
     )
 
