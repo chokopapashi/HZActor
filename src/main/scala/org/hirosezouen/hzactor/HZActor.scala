@@ -145,10 +145,10 @@ object HZActor {
         exitWithError(HZErrorStoped(th), th, parent)
     }
 
+    type PFInput = PartialFunction[Tuple2[String,ActorContext], Unit]
     def defaultInputFilter(s: String) = s 
-
     class InputActor(in: InputStream, filter: (String) => String,
-                     input: PartialFunction[String,Unit]) extends Actor
+                     input: PFInput) extends Actor
     {
         private val reader = new BufferedReader(new InputStreamReader(in))
         private case class InputLoop()
@@ -171,9 +171,9 @@ object HZActor {
 //                                parent ! HZNormalStoped()
                                 context.stop(self)
                             }
-                        }: PartialFunction[String,Unit]) orElse input orElse({
+                        }: PFInput) orElse input orElse({
                             case x => log_error(s"InputActor:unknown message:$x")
-                        }: PartialFunction[String,Unit]))(filter(line))
+                        }: PFInput))((filter(line),context))
 
                         self ! InputLoop()
                     }
@@ -188,7 +188,7 @@ object HZActor {
     }
     object InputActor {
         def start(in: InputStream, filter: (String) => String = defaultInputFilter)
-                 (input: PartialFunction[String,Unit])
+                 (input: PFInput)
                  (implicit context: ActorContext): ActorRef
             = context.actorOf(Props(new InputActor(in,filter,input)), "InputActor")
     }
