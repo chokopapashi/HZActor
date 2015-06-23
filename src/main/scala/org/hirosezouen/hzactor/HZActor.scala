@@ -56,23 +56,44 @@ object HZActor {
         val actor: ActorRef
         val stopReason: HZActorReason
     }
+
     case class HZActorState(actor: ActorRef, stopReason: HZActorReason = HZNullReason) extends HZActorStateBase
 
-    class HZActorStateSet[A <: HZActorStateBase] extends Set[A]
-                                                 with SetLike[A, HZActorStateSet[A]]
-                                                 with Serializable
-     {
-        def +(elem: A): HZActorStateSet[A] = {
-            super
-            this
-        }
-        def -(elem: A): HZActorStateSet[A] = this
-        def contains(elem: A): Boolean = true
-        def iterator: Iterator[A] = null
-        override def empty = new HZActorStateSet
+    /*
+     * Note : I gave up implement companion object because I could not be solved "Higher Kind Generics" problem anyhow.
+     * reference : http://stackoverflow.com/questions/4416885/extend-scala-set-with-concrete-type
+     *           : http://stackoverflow.com/questions/27800502/error-higher-kinded-types-scala-type-arguments-do-not-conform-type-ts-bounds
+     */
+    import scala.language.higherKinds
+    import scala.collection.AbstractSet
+    import scala.collection.generic.{CanBuildFrom,GenericCompanion,GenericSetTemplate,SetFactory}
+    import scala.collection.mutable.Builder
+    import scala.collection.mutable.SetBuilder
+    import scala.collection.SetLike
+    class HZActorStateSet[A <: HZActorState](set: Set[A] = Set.empty[A])
+        extends AbstractSet[A]
+        with Set[A]
+        with SetLike[A, HZActorStateSet[A]]
+//    with GenericSetTemplate[A, HZActorStateSet]
+        with Serializable
+    {
+        def +(elem: A): HZActorStateSet[A] = new HZActorStateSet(set + elem)
+        def -(elem: A): HZActorStateSet[A] = new HZActorStateSet(set - elem)
+        def contains(elem: A): Boolean = set.contains(elem)
+        def iterator: Iterator[A] = set.iterator
+        override def empty = new HZActorStateSet()
+//    override def companion: GenericCompanion[HZActorStateSet] = HZActorStateSet
     }
-    object HZActorStateSet {
-        def empty = new HZActorStateSet
+//    object HZActorStateSet extends ImmutableSetFactory[HZActorStateSet]
+    object HZActorStateSet
+    {
+        def empty[A <: HZActorState]: HZActorStateSet[A] = new HZActorStateSet[A]()
+        private def newBuilder[A <: HZActorState]: Builder[A, HZActorStateSet[A]] = new SetBuilder[A, HZActorStateSet[A]](empty)
+        def apply[A <: HZActorState](elems: A*): HZActorStateSet[A] = (empty[A] /: elems) (_ + _)
+        private def testSetCanBuildFrom[A <: HZActorState] = new CanBuildFrom[HZActorStateSet[A], A, HZActorStateSet[A]] {
+            def apply(from: HZActorStateSet[A]) = newBuilder
+            def apply() = newBuilder
+        }
     }
 
     def exitNormaly(reason: HZActorReason, parent: ActorRef)(implicit myself: ActorRef, context: ActorContext) {
