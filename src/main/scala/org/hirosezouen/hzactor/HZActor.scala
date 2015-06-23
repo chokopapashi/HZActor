@@ -145,7 +145,7 @@ object HZActor {
         exitWithError(HZErrorStoped(th), th, parent)
     }
 
-    type PFInput = PartialFunction[Tuple2[String,ActorContext], Unit]
+    type PFInput = PartialFunction[Tuple2[String,ActorRef], Unit]
     def defaultInputFilter(s: String) = s 
     class InputActor(in: InputStream, filter: (String) => String,
                      input: PFInput) extends Actor
@@ -173,7 +173,7 @@ object HZActor {
                             }
                         }: PFInput) orElse input orElse({
                             case x => log_error(s"InputActor:unknown message:$x")
-                        }: PFInput))((filter(line),context))
+                        }: PFInput))((filter(line),self))
 
                         self ! InputLoop()
                     }
