@@ -58,11 +58,21 @@ object HZActor {
     }
 
     case class HZActorState(actor: ActorRef, stopReason: HZActorReason = HZNullReason) extends HZActorStateBase
-    case class HZActorStates(var actorStateSet: Set[HZActorState] = Set.empty) {
+    case class HZActorStates(context: ActorContext, var actorStateSet: Set[HZActorState] = Set.empty) {
     //    import HZActorStates._
 
-        def add(as: HZActorState): Unit = actorStateSet += as
-        def delete(a: ActorRef): Unit = actorStateSet = actorStateSet.filterNot(_.actor == a)
+        def add(as: HZActorState): Unit = {
+            actorStateSet += as
+            context.watch(as.actor)
+        }
+        def delete(a: ActorRef): Unit = actorStateSet = actorStateSet.filterNot{
+            as =>
+            if(as.actor == a) {
+                context.unwatch(a)
+                false
+            } else
+                true
+        }
         def add(a: ActorRef): Unit = add(HZActorState(a))
         def addReason(a: ActorRef, reason: HZActorReason): Unit = 
             actorStateSet = actorStateSet.map(as => if(as.actor == a) HZActorState(a, reason) else as)
@@ -70,7 +80,7 @@ object HZActor {
         def +=(a: ActorRef): Unit = add(a)
     //    def ++=(assw: HZActorStateSeqWrap): Unit = actorStateSet ++= assw.seq
     //    def ++=(actorsw: ActorRefSeqWrap): Unit = actorStateSet ++= actorsw.seq.map(HZActorState(_))
-        def ++=(actors: Seq[ActorRef]): Unit = actorStateSet ++= actors.map(HZActorState(_))
+        def ++=(actors: Seq[ActorRef]): Unit = actors.foreach(add(_))
         def +=(actors: ActorRef*): Unit = this.++=(actors)
         def -=(a: ActorRef): Unit = delete(a)
         def contains(a: ActorRef): Boolean = actorStateSet.find(_.actor == a).isEmpty
@@ -88,7 +98,8 @@ object HZActor {
 
     //    def apply(assw: HZActorStateSeqWrap): HZActorStates = HZActorStates(Set(assw.seq: _*))
     //    def apply(actorsw: ActorRefSeqWrap): HZActorStates = HZActorStates(Set(actorsw.seq.map(HZActorState(_)): _*))
-        def apply(actors: ActorRef*): HZActorStates = HZActorStates(Set(actors.map(HZActorState(_)): _*))
+        def apply(actors: ActorRef*)(implicit context: ActorContext): HZActorStates
+            = HZActorStates(context, Set(actors.map(HZActorState(_)): _*))
     }
 
     /*
