@@ -83,7 +83,7 @@ object HZActor {
         def ++=(actors: Seq[ActorRef]): Unit = actors.foreach(add(_))
         def +=(actors: ActorRef*): Unit = this.++=(actors)
         def -=(a: ActorRef): Unit = delete(a)
-        def contains(a: ActorRef): Boolean = actorStateSet.find(_.actor == a).isEmpty
+        def contains(a: ActorRef): Boolean = actorStateSet.find(_.actor == a).nonEmpty
         def isEmpty: Boolean = actorStateSet.isEmpty
         def nonEmpty: Boolean = actorStateSet.nonEmpty
         def size: Int = actorStateSet.size
