@@ -69,9 +69,9 @@ object HZActor {
             as =>
             if(as.actor == a) {
                 context.unwatch(a)
-                false
-            } else
                 true
+            } else
+                false
         }
         def add(a: ActorRef): Unit = add(HZActorState(a))
         def addReason(a: ActorRef, reason: HZActorReason): Unit = 
