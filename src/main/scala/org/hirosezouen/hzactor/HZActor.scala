@@ -41,17 +41,24 @@ object HZActor {
 
     trait HZActorInformation
 
-    trait HZActorReason
+    trait HZActorReason {
+        val sender: ActorRef
+        override def toString = s"${this.toString}(${this.sender.toString})"
+    }
     trait HZActorStoped extends HZActorReason
-    case class HZErrorStoped(th: Throwable) extends HZActorStoped
-    case class HZNormalStoped() extends HZActorStoped
-    case class HZNormalStopedWithMessage(message: String) extends HZActorStoped
-    case class HZCommandStoped() extends HZActorStoped
-    case class HZCommandStopedWithReason(reason: AnyRef) extends HZActorStoped
-    case class HZUnHandledException(reason: Any) extends HZActorReason
-    case class HZUnknownReason(reason: Any) extends HZActorReason
-    object HZNullReason extends HZActorReason
-
+    case class HZErrorStoped(th: Throwable)(implicit val sender: ActorRef) extends HZActorStoped
+    case class HZNormalStoped()(implicit val sender: ActorRef) extends HZActorStoped
+    case class HZNormalStopedWithMessage(message: String)(implicit val sender: ActorRef) extends HZActorStoped
+    case class HZCommandStoped()(implicit val sender: ActorRef) extends HZActorStoped
+    case class HZCommandStopedWithReason(reason: AnyRef)(implicit val sender: ActorRef) extends HZActorStoped
+    case class HZUnHandledException(reason: Any)(implicit val sender: ActorRef) extends HZActorReason
+    case class HZUnknownReason(reason: Any)(implicit val sender: ActorRef) extends HZActorReason
+    object HZNullReason extends HZActorReason { val sender: ActorRef = null }
+/*
+    implicit class HZActorReasonString(actorReason: HZActorReason) {
+        def mkString(): String = s"${actorReason.toString}(${actorReason.sender.toString})"
+    }
+*/
     trait HZActorStateBase {
         val actor: ActorRef
         val stopReason: HZActorReason
@@ -145,15 +152,15 @@ object HZActor {
         context.stop(myself)
     }
     def exitNormaly(parent: ActorRef)(implicit myself: ActorRef, context: ActorContext) {
-        exitNormaly(HZNormalStoped(), parent)(myself, context)
+        exitNormaly(HZNormalStoped()(myself), parent)(myself, context)
     }
 
     def exitWithError(reason: HZActorReason, th: Throwable, parent: ActorRef):Nothing = {
         parent ! reason
         throw th
     }
-    def exitWithError(th: Throwable, parent: ActorRef):Nothing = {
-        exitWithError(HZErrorStoped(th), th, parent)
+    def exitWithError(th: Throwable, parent: ActorRef)(implicit myself: ActorRef):Nothing = {
+        exitWithError(HZErrorStoped(th)(myself), th, parent)
     }
 
     type PFInput = PartialFunction[String, Unit]
