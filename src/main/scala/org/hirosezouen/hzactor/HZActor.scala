@@ -68,21 +68,23 @@ object HZActor {
     case class HZActorStates(context: ActorContext, var actorStateSet: Set[HZActorState] = Set.empty) {
     //    import HZActorStates._
 
-        def add(as: HZActorState): Unit = {
+        def add(as: HZActorState): Unit = actorStateSet.synchronized {
             actorStateSet += as
             context.watch(as.actor)
         }
-        def delete(a: ActorRef): Unit = actorStateSet = actorStateSet.filterNot{
-            as =>
-            if(as.actor == a) {
-                context.unwatch(a)
-                true
-            } else
-                false
+        def delete(a: ActorRef): Unit = actorStateSet.synchronized {
+            actorStateSet = actorStateSet.filterNot{ as =>
+                if(as.actor == a) {
+                    context.unwatch(a)
+                    true
+                } else
+                    false
+            }
         }
         def add(a: ActorRef): Unit = add(HZActorState(a))
-        def addReason(a: ActorRef, reason: HZActorReason): Unit = 
+        def addReason(a: ActorRef, reason: HZActorReason): Unit = actorStateSet.synchronized {
             actorStateSet = actorStateSet.map(as => if(as.actor == a) HZActorState(a, reason) else as)
+        }
         def +=(as: HZActorState): Unit = add(as)
         def +=(a: ActorRef): Unit = add(a)
     //    def ++=(assw: HZActorStateSeqWrap): Unit = actorStateSet ++= assw.seq
