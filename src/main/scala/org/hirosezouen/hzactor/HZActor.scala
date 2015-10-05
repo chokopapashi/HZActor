@@ -43,7 +43,7 @@ object HZActor {
 
     trait HZActorReason {
         val sender: ActorRef
-        override def toString = s"${super.toString}(${this.sender.toString})"
+        override def toString = s"${super.toString}(${if(sender == null) "-" else sender.toString})"
     }
     trait HZActorStoped extends HZActorReason
     case class HZErrorStoped(th: Throwable)(implicit val sender: ActorRef) extends HZActorStoped
