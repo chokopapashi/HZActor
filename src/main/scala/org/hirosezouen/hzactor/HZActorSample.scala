@@ -58,20 +58,7 @@ object HZActorSample {
     }
 
     def main(args: Array[String]) {
-        val config = ConfigFactory.parseString("""
-            akka {
-                loglevel = "DEBUG"
-                loggers = ["akka.event.slf4j.Slf4jLogger"]
-                logging-filter = "akka.event.slf4j.Slf4jLoggingFilter"
-            }
-
-            akka.actor.debug {
-                receive = on
-                lifecycle = on
-            }
-        """)
-
-        implicit val system = ActorSystem("HZActorSample", config)
+        implicit val system = ActorSystem("HZActorSample")
         MainActor.start
         system.awaitTermination()
     }
