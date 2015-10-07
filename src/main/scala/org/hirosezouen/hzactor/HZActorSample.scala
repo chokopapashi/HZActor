@@ -15,8 +15,6 @@ import akka.actor.OneForOneStrategy
 import akka.actor.SupervisorStrategy.Escalate
 import akka.actor.SupervisorStrategy.Stop
 
-import com.typesafe.config.ConfigFactory
-
 import org.hirosezouen.hzutil._
 import HZActor._
 import HZLog._
