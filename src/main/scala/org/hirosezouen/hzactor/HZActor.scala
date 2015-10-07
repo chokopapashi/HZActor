@@ -24,7 +24,6 @@ import akka.actor.Actor
 import akka.actor.ActorContext
 import akka.actor.ActorRef
 import akka.actor.ActorRefFactory
-import akka.actor.ActorContext
 import akka.actor.Props
 import akka.actor.Terminated
 
@@ -209,7 +208,7 @@ object HZActor {
     object InputActor {
         def start(in: InputStream, filter: (String) => String = defaultInputFilter)
                  (input: PFInput)
-                 (implicit context: ActorContext): ActorRef
+                 (implicit context: ActorRefFactory): ActorRef
             = context.actorOf(Props(new InputActor(in,filter,input)), "InputActor")
     }
 }
