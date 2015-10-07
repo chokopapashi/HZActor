@@ -32,19 +32,18 @@ object HZActorSample {
             case t => super.supervisorStrategy.decider.applyOrElse(t, (_: Any) => Escalate)
         }
 
-        private var inputActor: ActorRef = null
+        private val actorStates = HZActorStates()
 
         val quit_r = "(?i)^q$".r
         override def preStart() {
-            inputActor = InputActor.start(System.in) {
+            actorStates += InputActor.start(System.in) {
                 case quit_r() => System.in.close
                 case s        => log_info(s"input : $s")
             }
-            context.watch(inputActor)
         }
 
         def receive = {
-            case Terminated(actor) if(actor == inputActor) => {
+            case Terminated(actor) if(actorStates.contains(actor)) => {
                 log_debug(s"MainActor:receive:Terminated($actor)")
                 context.system.shutdown()
             }
