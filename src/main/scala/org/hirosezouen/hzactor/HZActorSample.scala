@@ -7,8 +7,11 @@
 
 package org.hirosezouen.hzactor
 
+import java.io.InputStream
+
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.control.Exception._
 
 import akka.actor._
 import akka.actor.OneForOneStrategy
@@ -22,6 +25,18 @@ import HZLog._
 object HZActorSample {
     implicit val logger = getLogger(this.getClass.getName)
 
+    class MyInputActor(in: InputStream) extends InputActor(in, defaultInputFilter) {
+        val quit_r = "(?i)^q$".r
+        override val input: PFInput = {
+            case quit_r() => System.in.close
+            case s        => log_info(s"input : $s")
+        }
+    }
+    object MyInputActor {
+        def start(in: InputStream)(implicit context: ActorContext): ActorRef
+            = context.actorOf(Props(new MyInputActor(in)), "MyInputActor")
+    }
+
     class MainActor extends Actor {
         log_trace("MainActor")
 
@@ -32,12 +47,9 @@ object HZActorSample {
 
         private val actorStates = HZActorStates()
 
-        val quit_r = "(?i)^q$".r
         override def preStart() {
-            actorStates += InputActor.start(System.in) {
-                case quit_r() => System.in.close
-                case s        => log_info(s"input : $s")
-            }
+            log_debug(s"MainActor:preStart")
+            actorStates += MyInputActor.start(System.in)
         }
 
         def receive = {
