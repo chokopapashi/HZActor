@@ -47,6 +47,8 @@ lazy val root = (project in file(".")).
 //        javaOptions += "-Djava.library.path=lib",
 
         // misc...
+        unmanagedClasspath in Test += baseDirectory.value / "src/src/universal/conf",
+        unmanagedClasspath in Runtime += baseDirectory.value / "src/src/universal/conf",
         parallelExecution in Test := false,
 //        logLevel := Level.Debug,
         scalacOptions += "-deprecation",
@@ -54,4 +56,15 @@ lazy val root = (project in file(".")).
         scalacOptions += "-Xlint",
         scalacOptions += "-Xfatal-warnings"
     )
+
+/* 
+ * sbt-native-packager settings
+ */
+enablePlugins(JavaAppPackaging)
+
+executableScriptName := "HZSampleRunner"
+
+batScriptExtraDefines += """set "APP_CLASSPATH=%APP_CLASSPATH%;conf""""
+
+
 

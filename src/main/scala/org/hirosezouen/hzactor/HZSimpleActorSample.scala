@@ -22,41 +22,43 @@ import org.hirosezouen.hzutil._
 import HZActor._
 import HZLog._
 
-object HZSimpleActorSample extends App {
-    implicit val logger = getLogger(this.getClass.getName)
-    implicit val system = ActorSystem("HZSimpleActorSample")
+object HZSimpleActorSample {
+    def start() {
+        implicit val logger = getLogger(this.getClass.getName)
+        implicit val system = ActorSystem("HZSimpleActorSample")
 
-    val quit_r = "(?i)^q$".r
-    val inputActor = actor("InputActor")(new InputActor(System.in) {
-        override val input: PFInput = {
-            case quit_r() => System.in.close
-            case s        => {
-                context.actorSelection("/system/dsl/inbox-1") ! s
-                log_info(s"input : $s")
-            }
-        }
-    })
-
-    val ib = inbox()
-    log_debug("***:" + ib.getRef.toString)
-    ib.watch(inputActor)
-
-    var loopFlag = true
-    while(loopFlag) {
-        catching(classOf[TimeoutException]) either {
-            ib.receive(10 seconds) match {
-                case Terminated(actor) => {
-                    log_info(s"ib.receive:Terminated($actor)")
-                    loopFlag = false
+        val quit_r = "(?i)^q$".r
+        val inputActor = actor("InputActor")(new InputActor(System.in) {
+            override val input: PFInput = {
+                case quit_r() => System.in.close
+                case s        => {
+                    context.actorSelection("/system/dsl/inbox-1") ! s
+                    log_info(s"input : $s")
                 }
-                case s => log_info(s"ib.receive:($s)")
             }
-        } match {
-            case Right(_) => /* Continue loop. */
-            case Left(th: Throwable) => log_error(th.getMessage)
-        }
-    }
+        })
 
-    Await.result(system.terminate, Duration.Inf)
+        val ib = inbox()
+        log_debug("***:" + ib.getRef.toString)
+        ib.watch(inputActor)
+
+        var loopFlag = true
+        while(loopFlag) {
+            catching(classOf[TimeoutException]) either {
+                ib.receive(10 seconds) match {
+                    case Terminated(actor) => {
+                        log_info(s"ib.receive:Terminated($actor)")
+                        loopFlag = false
+                    }
+                    case s => log_info(s"ib.receive:($s)")
+                }
+            } match {
+                case Right(_) => /* Continue loop. */
+                case Left(th: Throwable) => log_error(th.getMessage)
+            }
+        }
+
+        Await.result(system.terminate, Duration.Inf)
+    }
 }
 

@@ -68,7 +68,7 @@ object HZActorSample {
         }
     }
 
-    def main(args: Array[String]) {
+    def start() {
         implicit val system = ActorSystem("HZActorSample")
         MainActor.start
         Await.result(system.whenTerminated, Duration.Inf)
