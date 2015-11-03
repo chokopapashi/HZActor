@@ -9,6 +9,7 @@ package org.hirosezouen.hzactor
 
 import java.util.concurrent.TimeoutException
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.control.Exception._
@@ -56,6 +57,6 @@ object HZSimpleActorSample extends App {
         }
     }
 
-    system.shutdown
+    Await.result(system.terminate, Duration.Inf)
 }
 

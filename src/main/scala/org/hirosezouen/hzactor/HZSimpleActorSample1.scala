@@ -7,6 +7,7 @@
 
 package org.hirosezouen.hzactor
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -31,6 +32,6 @@ object HZSimpleActorSample1 extends App {
     ib.watch(inputActor)
     log_info(s"ib.receive:${ib.receive(1 hours)}")
 
-    system.shutdown
+    Await.result(system.terminate, Duration.Inf)
 }
 

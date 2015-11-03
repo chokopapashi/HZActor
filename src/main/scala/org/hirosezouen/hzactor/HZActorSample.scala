@@ -9,6 +9,7 @@ package org.hirosezouen.hzactor
 
 import java.io.InputStream
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.control.Exception._
@@ -55,7 +56,7 @@ object HZActorSample {
         def receive = {
             case Terminated(actor) if(actorStates.contains(actor)) => {
                 log_debug(s"MainActor:receive:Terminated($actor)")
-                context.system.shutdown()
+                context.system.terminate()
             }
             case x => log_debug(s"x=$x")
         }
@@ -70,7 +71,7 @@ object HZActorSample {
     def main(args: Array[String]) {
         implicit val system = ActorSystem("HZActorSample")
         MainActor.start
-        system.awaitTermination()
+        Await.result(system.whenTerminated, Duration.Inf)
     }
 }
 
