@@ -47,8 +47,6 @@ lazy val root = (project in file(".")).
 //        javaOptions += "-Djava.library.path=lib",
 
         // misc...
-        unmanagedClasspath in Test += baseDirectory.value / "src/src/universal/conf",
-        unmanagedClasspath in Runtime += baseDirectory.value / "src/src/universal/conf",
         parallelExecution in Test := false,
 //        logLevel := Level.Debug,
         scalacOptions += "-deprecation",
