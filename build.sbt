@@ -13,6 +13,9 @@ lazy val commonSettings = Seq(
     scalaVersion := "2.11.7"
 )
 
+// sbt-native-packager settings
+enablePlugins(JavaAppPackaging)
+
 lazy val root = (project in file(".")).
     settings(commonSettings: _*).
     settings(
@@ -38,6 +41,10 @@ lazy val root = (project in file(".")).
         // add HZUtil dependency
         libraryDependencies += "org.hirosezouen" %% "hzutil" % "2.0.0",
 
+        // sbt-native-packager settings
+        executableScriptName := "HZSampleRunner",
+        batScriptExtraDefines += """set "APP_CLASSPATH=%APP_CLASSPATH%;conf"""",
+
         // Avoid sbt warning ([warn] This usage is deprecated and will be removed in sbt 1.0)
         // Current Sbt dose not allow overwrite stabele release created publicLocal task.
         isSnapshot := true,
@@ -54,15 +61,4 @@ lazy val root = (project in file(".")).
         scalacOptions += "-Xlint",
         scalacOptions += "-Xfatal-warnings"
     )
-
-/* 
- * sbt-native-packager settings
- */
-enablePlugins(JavaAppPackaging)
-
-executableScriptName := "HZSampleRunner"
-
-batScriptExtraDefines += """set "APP_CLASSPATH=%APP_CLASSPATH%;conf""""
-
-
 
