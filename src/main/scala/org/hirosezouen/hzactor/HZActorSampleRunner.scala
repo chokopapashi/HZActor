@@ -3,11 +3,11 @@ package org.hirosezouen.hzactor
 import org.hirosezouen.hzutil._
 import HZLog._
 
-object HZSampleRunner extends App {
+object HZActorSampleRunner extends App {
     implicit val logger = getLogger(this.getClass.getName)
 
-    def usage =
-        """|usage : HZSampleRunner <param>
+    def usage = """
+           |usage : HZActorSampleRunner <param>
            |param : 1 | HZActorSample
            |        2 | HZActorSample1
            |        3 | HZSimpleActorSample
@@ -23,6 +23,6 @@ object HZSampleRunner extends App {
             case _ => printErrorAndUsage("error : wrong argument.")
         }
     } else
-        printErrorAndUsage("error : argument required.")
+        printErrorAndUsage("argument required.")
 }
 
