@@ -12,7 +12,6 @@ import java.io.InputStream
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.control.Exception._
 
 import akka.actor._
 import akka.actor.OneForOneStrategy

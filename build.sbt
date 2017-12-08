@@ -9,8 +9,8 @@
 // factor out common settings into a sequence
 lazy val commonSettings = Seq(
     organization := "org.hirosezouen",
-    version      := "1.1.0",
-    scalaVersion := "2.12.1"
+    version      := "1.2.0",
+    scalaVersion := "2.12.4"
 )
 
 // sbt-native-packager settings
@@ -27,19 +27,19 @@ lazy val root = (project in file(".")).
 
         // add Akka dependency
 //        resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/",
-        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.4.17",
-        libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.4.17",
+        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.7",
+        libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.5.7",
 
         // add ScalaTest dependency
-        libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.1" % "test",
+        libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.4" % "test",
 
         // add Logback, SLF4j dependencies
-        libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.1.11",
-        libraryDependencies += "ch.qos.logback" % "logback-core" % "1.1.11",
-        libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.24",
+        libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
+        libraryDependencies += "ch.qos.logback" % "logback-core" % "1.2.3",
+        libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.25",
 
         // add HZUtil dependency
-        libraryDependencies += "org.hirosezouen" %% "hzutil" % "2.1.0",
+        libraryDependencies += "org.hirosezouen" %% "hzutil" % "2.2.0",
 
         // sbt-native-packager settings
         executableScriptName := "HZSampleRunner",
@@ -58,7 +58,9 @@ lazy val root = (project in file(".")).
 //        logLevel := Level.Debug,
         scalacOptions += "-deprecation",
         scalacOptions += "-feature",
-        scalacOptions += "-Xlint",
+        scalacOptions += "-unchecked",
+        scalacOptions += "-Xlint:_,-unused",
+        scalacOptions += "-Ywarn-unused-import",
         scalacOptions += "-Xfatal-warnings"
     )
 

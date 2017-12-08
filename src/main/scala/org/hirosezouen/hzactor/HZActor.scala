@@ -8,28 +8,26 @@
 package org.hirosezouen.hzactor
 
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.io.Reader
 
 import scala.util.control.Exception._
-import scala.collection.generic.GenericSetTemplate
-import scala.collection.generic.SetFactory
-import scala.collection.generic.ImmutableSetFactory
-import scala.collection.SetLike
-import scala.concurrent.duration._
+//import scala.collection.generic.GenericSetTemplate
+//import scala.collection.generic.SetFactory
+//import scala.collection.generic.ImmutableSetFactory
+//import scala.collection.SetLike
+//import scala.concurrent.duration._
 
 import akka.actor.Actor
 import akka.actor.ActorContext
 import akka.actor.ActorRef
-import akka.actor.ActorRefFactory
+//import akka.actor.ActorRefFactory
 import akka.actor.ActorContext
 import akka.actor.Props
-import akka.actor.Terminated
+//import akka.actor.Terminated
 
 import org.hirosezouen.hzutil._
-import HZIO._
+//import HZIO._
 
 object HZActor {
     import HZLog._
@@ -117,9 +115,10 @@ object HZActor {
      * reference : http://stackoverflow.com/questions/4416885/extend-scala-set-with-concrete-type
      *           : http://stackoverflow.com/questions/27800502/error-higher-kinded-types-scala-type-arguments-do-not-conform-type-ts-bounds
      */
-    import scala.language.higherKinds
+//    import scala.language.higherKinds
     import scala.collection.AbstractSet
-    import scala.collection.generic.{CanBuildFrom,GenericCompanion,GenericSetTemplate,SetFactory}
+//    import scala.collection.generic.{CanBuildFrom,GenericCompanion,GenericSetTemplate,SetFactory}
+    import scala.collection.generic.{CanBuildFrom}
     import scala.collection.mutable.Builder
     import scala.collection.mutable.SetBuilder
     import scala.collection.SetLike
