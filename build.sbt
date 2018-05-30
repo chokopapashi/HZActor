@@ -9,8 +9,8 @@
 // factor out common settings into a sequence
 lazy val commonSettings = Seq(
     organization := "org.hirosezouen",
-    version      := "1.2.0",
-    scalaVersion := "2.12.4"
+    version      := "1.3.0",
+    scalaVersion := "2.12.6"
 )
 
 // sbt-native-packager settings
@@ -27,11 +27,12 @@ lazy val root = (project in file(".")).
 
         // add Akka dependency
 //        resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/",
-        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.7",
-        libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.5.7",
+        libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.12",
+        libraryDependencies += "com.typesafe.akka" %% "akka-slf4j" % "2.5.12",
+
 
         // add ScalaTest dependency
-        libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.4" % "test",
+        libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.5" % "test",
 
         // add Logback, SLF4j dependencies
         libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3",
@@ -39,7 +40,7 @@ lazy val root = (project in file(".")).
         libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.25",
 
         // add HZUtil dependency
-        libraryDependencies += "org.hirosezouen" %% "hzutil" % "2.2.0",
+        libraryDependencies += "org.hirosezouen" %% "hzutil" % "2.3.0",
 
         // sbt-native-packager settings
         executableScriptName := "HZSampleRunner",
